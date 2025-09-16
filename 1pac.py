@@ -1,33 +1,73 @@
 from transformers import pipeline
 
-chatbot = pipeline(
-    "text-generation",
-    model="swiss-ai/Apertus-8B-Instruct-2509",
-    device=0
-)
+def create_chatbot(model_name="microsoft/DialoGPT-medium", device=-1):
+    """
+    Создает чат-бота для английского диалога через pipeline.
 
-history = []
+    :param model_name: название модели для загрузки
+    :param device: 0 для GPU, -1 для CPU
+    :return: объект chatbot
+    """
+    return pipeline("text-generation", model=model_name, device=device)
 
-while True:
-    user_input = input("Ты: ")
-    if user_input in ["выход", "exit", "quit"]:
-        break
 
-    prompt = ""
-    for i in history[-6:]:
-        prompt += i + "\n"
-    user = f"Ты: {user_input}\n"
-    bot_prompt = "Бот:"
-    prompt += user + bot_prompt
+def get_bot_reply(chatbot, history, user_input):
+    """
+    Генерирует ответ бота на основе истории сообщений.
 
-    result = chatbot(prompt)
-    bot_reply = result[0]["generated_text"]
+    :param chatbot: объект chatbot
+    :param history: список предыдущих сообщений
+    :param user_input: новое сообщение пользователя
+    :return: ответ бота
+    """
 
-    print("Бот:", bot_reply.strip())
+    context = "\n".join(history[-3:])
+    prompt = f"Bot is a friendly and helpful assistant.\n{context}\nYou: {user_input}\nBot:"
+    result = chatbot(
+        prompt,
+        max_new_tokens=60,
+        do_sample=True,
+        top_k=50,
+        top_p=0.95,
+        pad_token_id=50256
+    )
+    bot_reply = result[0]["generated_text"].replace(prompt, "").strip()
+    return bot_reply
 
-    history.append(f"Ты: {user_input}")
-    history.append(f"Бот: {bot_reply.strip()}")
 
-# Сохраняем историю
-with open("history.txt", "w", encoding="utf-8") as f:
-    f.write("\n".join(history))   
+
+def save_history(history, filename="history.txt"):
+    """
+    Сохраняет историю чата в файл.
+
+    :param history: список сообщений
+    :param filename: имя файла для сохранения
+    """
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write("\n".join(history))
+
+
+def chat():
+    """
+    Запускает интерактивный английский чат с ботом.
+    """
+    chatbot = create_chatbot()
+    history = []
+
+    print("Type 'exit' to quit the chat.")
+
+    while True:
+        user_input = input("You: ").strip()
+        if user_input in ["exit", "quit", "выход"]:
+            break
+
+        bot_reply = get_bot_reply(chatbot, history, user_input)
+        print("Bot:", bot_reply)
+        history.append(f"You: {user_input}")
+        history.append(f"Bot: {bot_reply}")
+
+    save_history(history)
+
+
+if __name__ == "__main__":
+    chat()
