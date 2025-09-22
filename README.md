@@ -34,15 +34,15 @@ You:
 Для выхода используйте exit, quit или выход.
 
 ## 📝 Пример диалога
--- Type 'exit' to quit the chat.
+- Type 'exit' to quit the chat.
 
--- You: Hello!
+- You: Hello!
 
--- Bot: Hi there! How are you doing today?
+- Bot: Hi there! How are you doing today?
 
--- You: I'm fine, thanks.
+- You: I'm fine, thanks.
 
--- Bot: Glad to hear that! What would you like to talk about?
+- Bot: Glad to hear that! What would you like to talk about?
 
 
 
